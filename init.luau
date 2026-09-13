@@ -415,6 +415,19 @@ do
 		return nil
 	end
 	setmetatable(genv_table, genv_mt)
+	-- Eager snapshot: copy every global into genv_table up front, so
+	-- `getgenv().print` etc. resolve RAW without any metamethod involved.
+	-- (Later-defined globals still resolve through the __index fallback.)
+	pcall(function()
+		local env = getfenv()
+		if type(env) == 'table' then
+			for k, v in pairs(env) do
+				if rawget(genv_table, k) == nil then
+					rawset(genv_table, k, v)
+				end
+			end
+		end
+	end)
 end
 
 local renv_table = {
