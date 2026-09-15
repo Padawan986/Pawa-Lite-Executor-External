@@ -2831,6 +2831,45 @@ function WebSocket.connect(url)
 	return proxy
 end
 
+-- autoexecute: run workspace/autoexec/*.lua|*.luau shortly after inject.
+-- The folder is created on first run so users can just drop files in.
+local function run_autoexec()
+	local ok, files = pcall(listfiles, 'autoexec')
+	if not ok or type(files) ~= 'table' then
+		pcall(makefolder, 'autoexec')
+		return
+	end
+	table.sort(files)
+	for _, path in ipairs(files) do
+		if type(path) == 'string'
+			and (path:sub(-4) == '.lua' or path:sub(-5) == '.luau') then
+			task.spawn(function()
+				local okread, src = pcall(readfile, path)
+				if not okread or type(src) ~= 'string' or src == '' then
+					return
+				end
+				local okload, fn = pcall(loadstring, src, 'autoexec/' .. path)
+				if not okload or type(fn) ~= 'function' then
+					warn('Pawa-Lite(Beta)V2 -- autoexec compile failed: ' .. path)
+					return
+				end
+				local okrun, err = pcall(fn)
+				if not okrun then
+					warn('Pawa-Lite(Beta)V2 -- autoexec runtime error [' .. path .. ']: ' .. tostring(err))
+				end
+			end)
+		end
+	end
+end
+
+task.spawn(function()
+	task.wait(3)
+	local ok, err = pcall(run_autoexec)
+	if not ok then
+		warn('Pawa-Lite(Beta)V2 -- autoexec failed: ' .. tostring(err))
+	end
+end)
+
 -- main loop
 
 task.spawn(function()
