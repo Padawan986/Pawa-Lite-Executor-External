@@ -3585,9 +3585,9 @@ getscriptfunction = getscriptclosure
 
 -- autoexecute: run workspace/autoexec/*.lua|*.luau shortly after inject.
 local function run_autoexec()
+	pcall(makefolder, 'autoexec')
 	local ok, files = pcall(listfiles, 'autoexec')
 	if not ok or type(files) ~= 'table' then
-		pcall(makefolder, 'autoexec')
 		return
 	end
 	table.sort(files)

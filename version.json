@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-14.2",
-  "notes": "emulator port: fiu init.bin + full init + bridge handlers"
+  "init_version": "2026-09-14.3",
+  "notes": "deserializer v7-v9 (TABLE_WITH_CONSTANTS/INTEGER/CLASS_SHAPE/VECTORD) + autoexec quiet"
 }
