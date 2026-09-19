@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-14.1",
-  "notes": "roblox version-4310300497aa4917 support + autoexec + identity fixes"
+  "init_version": "2026-09-14.2",
+  "notes": "emulator port: fiu init.bin + full init + bridge handlers"
 }
