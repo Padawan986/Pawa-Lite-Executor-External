@@ -656,9 +656,9 @@ lz4decompress = lz4.decompress
 loadstring = function(source, chunkname)
 	local ok, result = pcall(function()
 		assert(type(source) == 'string', "invalid argument #1 to 'loadstring' (string expected, got " .. type(source) .. ')')
-		-- fast path: base64 source over the wire (raw text would break the
-		-- bridge's newline-separated args), raw bytecode back
-		local response = send_method('compile_raw', base64encode(source))
+		-- fast path: raw source over the wire, raw bytecode back (no base64
+		-- codecs on either side, which dominate load time on big payloads)
+		local response = send_method('compile_raw', source)
 		if type(response) ~= 'string' or response == '' or response:sub(1, 4) == 'fail' then
 			-- legacy path (base64 round-trip)
 			response = send_method('compile', base64encode(source))

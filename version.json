@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-14.4",
-  "notes": "compile_raw base64 (multiline sources broke bridge arg split)"
+  "init_version": "2026-09-14.5",
+  "notes": "revert compile_raw base64 (inject-kick verdacht)"
 }
