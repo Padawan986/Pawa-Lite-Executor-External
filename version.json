@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-14.6",
-  "notes": "rollback auf kick-freien Stand (76 Prozent stabil)"
+  "init_version": "2026-09-20.1",
+  "notes": "emulator v11: opcodes CALLFB/CMPPROTO/FASTPCALL/UDATAKS/NEWCLASS, kinds 8-11, feedback skip, AUX mask"
 }
