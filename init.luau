@@ -1015,6 +1015,7 @@ loadstring = function(source, chunkname)
 
 	local response = send_method('compile', base64encode(source), base64encode(chunkname or ''))
 	if not response or response:sub(1, 4) == 'fail' then
+		warn('Pawa-Lite(Beta)V2 -- loadstring compile failed: ' .. tostring(response))
 		return nil, 'Pawa-Lite(Beta)V2 -- loadstring error: ' .. tostring(response)
 	end
 	local func = load_bytecode(base64decode(response), getfenv())
@@ -1388,6 +1389,12 @@ local function clone_target(proxy)
 end
 
 cloneref = function(obj)
+	-- Instances pass through untouched: the engine rejects newproxy
+	-- userdata wherever an Instance is expected (Parent, Adornee, ...).
+	-- Only non-Instances get the hiding proxy.
+	if typeof(obj) == 'Instance' then
+		return obj
+	end
 	local proxy = newproxy(true)
 	local meta = getmetatable(proxy)
 	clonerefs[proxy] = obj
