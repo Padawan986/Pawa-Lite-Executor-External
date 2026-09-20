@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-20.4",
-  "notes": "mutated emulator bin kick-test (pawa_dbg, old luau)"
+  "init_version": "2026-09-20.5",
+  "notes": "kick-free native baseline (emulator retired)"
 }
