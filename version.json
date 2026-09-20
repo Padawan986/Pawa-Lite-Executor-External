@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.1.1",
-  "init_version": "2026-09-14.5",
-  "notes": "revert compile_raw base64 (inject-kick verdacht)"
+  "init_version": "2026-09-14.6",
+  "notes": "rollback auf kick-freien Stand (76 Prozent stabil)"
 }
