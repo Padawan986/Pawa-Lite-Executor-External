@@ -2966,10 +2966,13 @@ pcall(function()
 		return
 	end
 
-	local ACCENT = Color3.fromRGB(138, 92, 246)
-	local BG = Color3.fromRGB(17, 17, 24)
-	local PANEL = Color3.fromRGB(28, 28, 38)
-	local TEXT = Color3.fromRGB(235, 235, 245)
+	local ACCENT = Color3.fromRGB(255, 128, 0)
+	local ACCENT_DARK = Color3.fromRGB(120, 58, 0)
+	local BG = Color3.fromRGB(16, 16, 20)
+	local PANEL = Color3.fromRGB(26, 26, 33)
+	local PANEL2 = Color3.fromRGB(33, 33, 43)
+	local TEXT = Color3.fromRGB(232, 232, 240)
+	local DIM = Color3.fromRGB(150, 150, 165)
 
 	local gui = Instance.new('ScreenGui')
 	gui.Name = 'PawaLiteMenu'
@@ -2980,8 +2983,8 @@ pcall(function()
 
 	local main = Instance.new('Frame')
 	main.Name = 'Main'
-	main.Size = UDim2.new(0, 560, 0, 380)
-	main.Position = UDim2.new(0.5, -280, 0.5, -190)
+	main.Size = UDim2.new(0, 760, 0, 460)
+	main.Position = UDim2.new(0.5, -380, 0.5, -230)
 	main.BackgroundColor3 = BG
 	main.BorderSizePixel = 0
 	main.Active = true
@@ -2989,54 +2992,95 @@ pcall(function()
 	main.Visible = false
 	main.Parent = gui
 
+	local stroke = Instance.new('UIStroke')
+	stroke.Color = Color3.fromRGB(55, 55, 68)
+	stroke.Thickness = 1
+	stroke.Parent = main
+
 	local corner = Instance.new('UICorner')
 	corner.CornerRadius = UDim.new(0, 8)
 	corner.Parent = main
 
 	local title = Instance.new('TextLabel')
-	title.Size = UDim2.new(1, 0, 0, 32)
+	title.Size = UDim2.new(1, 0, 0, 34)
 	title.BackgroundColor3 = PANEL
-	title.Text = '  Pawa-Lite  (INSERT toggles)'
+	title.Text = '   PAWA-LITE  //  DEX  CONSOLE'
 	title.TextColor3 = ACCENT
-	title.Font = Enum.Font.GothamBold
+	title.Font = Enum.Font.GothamBlack
 	title.TextSize = 15
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = main
 
-	local tabs = Instance.new('Frame')
-	tabs.Size = UDim2.new(1, 0, 0, 30)
-	tabs.Position = UDim2.new(0, 0, 0, 32)
-	tabs.BackgroundTransparency = 1
-	tabs.Parent = main
+	local titleCorner = Instance.new('UICorner')
+	titleCorner.CornerRadius = UDim.new(0, 8)
+	titleCorner.Parent = title
+
+	local accentBar = Instance.new('Frame')
+	accentBar.Size = UDim2.new(1, 0, 0, 2)
+	accentBar.Position = UDim2.new(0, 0, 0, 34)
+	accentBar.BackgroundColor3 = ACCENT
+	accentBar.BorderSizePixel = 0
+	accentBar.Parent = main
+
+	local side = Instance.new('Frame')
+	side.Size = UDim2.new(0, 132, 1, -44)
+	side.Position = UDim2.new(0, 6, 0, 40)
+	side.BackgroundColor3 = PANEL
+	side.BorderSizePixel = 0
+	side.Parent = main
+
+	local sideCorner = Instance.new('UICorner')
+	sideCorner.CornerRadius = UDim.new(0, 6)
+	sideCorner.Parent = side
 
 	local pages = {}
+	local tabBtns = {}
 	local pageNames = {'Execute', 'Explorer', 'Player', 'Server'}
 	local function showPage(name)
 		for n, pg in pairs(pages) do
 			pg.Visible = (n == name)
 		end
+		for n, b in pairs(tabBtns) do
+			b.BackgroundColor3 = (n == name) and ACCENT_DARK or PANEL2
+			b.TextColor3 = (n == name) and Color3.fromRGB(255, 255, 255) or DIM
+		end
 	end
 	for i, name in ipairs(pageNames) do
 		local b = Instance.new('TextButton')
-		b.Size = UDim2.new(0.25, -2, 1, 0)
-		b.Position = UDim2.new((i - 1) * 0.25, 1, 0, 0)
-		b.BackgroundColor3 = PANEL
-		b.TextColor3 = TEXT
-		b.Font = Enum.Font.Gotham
+		b.Size = UDim2.new(1, -10, 0, 30)
+		b.Position = UDim2.new(0, 5, 0, 5 + (i - 1) * 34)
+		b.BackgroundColor3 = PANEL2
+		b.TextColor3 = DIM
+		b.Font = Enum.Font.GothamBold
 		b.TextSize = 13
 		b.Text = name
-		b.Parent = tabs
+		b.AutoButtonColor = true
+		b.Parent = side
+		local bc = Instance.new('UICorner')
+		bc.CornerRadius = UDim.new(0, 5)
+		bc.Parent = b
+		tabBtns[name] = b
 		local pg = Instance.new('Frame')
-		pg.Size = UDim2.new(1, -12, 1, -70)
-		pg.Position = UDim2.new(0, 6, 0, 64)
+		pg.Size = UDim2.new(1, -152, 1, -50)
+		pg.Position = UDim2.new(0, 144, 0, 42)
 		pg.BackgroundTransparency = 1
-		pg.Visible = (i == 1)
+		pg.Visible = (i == 2)
 		pg.Parent = main
 		pages[name] = pg
 		b.MouseButton1Click:Connect(function()
 			showPage(name)
 		end)
 	end
+	local ver = Instance.new('TextLabel')
+	ver.Size = UDim2.new(1, -10, 0, 16)
+	ver.Position = UDim2.new(0, 5, 1, -21)
+	ver.BackgroundTransparency = 1
+	ver.TextColor3 = DIM
+	ver.Font = Enum.Font.Code
+	ver.TextSize = 11
+	ver.Text = 'v2.0'
+	ver.Parent = side
+	showPage('Explorer')
 
 	local function mkLabel(parent, text, y, h)
 		local l = Instance.new('TextLabel')
@@ -3107,77 +3151,315 @@ pcall(function()
 		end)
 	end
 
-	-- Explorer page
+	-- Explorer page (DEX style: tree + search + properties)
 	do
 		local pg = pages['Explorer']
-		local crumb = mkLabel(pg, 'game', 0, 20)
-		local list = Instance.new('ScrollingFrame')
-		list.Size = UDim2.new(1, 0, 1, -84)
-		list.Position = UDim2.new(0, 0, 0, 22)
-		list.BackgroundColor3 = PANEL
-		list.BorderSizePixel = 0
-		list.ScrollBarThickness = 4
-		list.Parent = pg
-		local layout = Instance.new('UIListLayout')
-		layout.SortOrder = Enum.SortOrder.Name
-		layout.Parent = list
-		local node = game
+		local searchBox = mkBox(pg, 'search...', UDim2.new(0, 0, 0, 0), UDim2.new(0.55, -4, 0, 22), false)
+		searchBox.PlaceholderText = 'search...'
+		local countLabel = mkLabel(pg, '', 0, 22)
+		countLabel.Position = UDim2.new(0.55, 0, 0, 0)
+		countLabel.Size = UDim2.new(0.45, 0, 0, 22)
+		countLabel.TextColor3 = DIM
+		local tree = Instance.new('ScrollingFrame')
+		tree.Size = UDim2.new(0.55, -4, 1, -52)
+		tree.Position = UDim2.new(0, 0, 0, 26)
+		tree.BackgroundColor3 = PANEL
+		tree.BorderSizePixel = 0
+		tree.ScrollBarThickness = 4
+		tree.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		tree.CanvasSize = UDim2.new(0, 0, 0, 0)
+		tree.Parent = pg
+		local treeLayout = Instance.new('UIListLayout')
+		treeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		treeLayout.Parent = tree
+		local props = Instance.new('ScrollingFrame')
+		props.Size = UDim2.new(0.45, 0, 1, -52)
+		props.Position = UDim2.new(0.55, 4, 0, 26)
+		props.BackgroundColor3 = PANEL
+		props.BorderSizePixel = 0
+		props.ScrollBarThickness = 4
+		props.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		props.CanvasSize = UDim2.new(0, 0, 0, 0)
+		props.Parent = pg
+		local propsLayout = Instance.new('UIListLayout')
+		propsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		propsLayout.Parent = props
+
+		local expanded = {}
 		local selected = nil
-		local info = mkLabel(pg, '', 1, 20)
-		info.Position = UDim2.new(0, 0, 1, -62)
-		local function refresh()
-			for _, c in ipairs(list:GetChildren()) do
-				if c:IsA('TextButton') then
+		local MAX_ROWS = 1500
+		local rowCount = 0
+
+		local function classTag(class)
+			if class:find('Script') then return 'S', Color3.fromRGB(255, 200, 90) end
+			if class == 'ModuleScript' then return 'M', Color3.fromRGB(255, 170, 60) end
+			if class == 'Folder' then return 'F', Color3.fromRGB(150, 200, 255) end
+			if class == 'Model' then return 'M', Color3.fromRGB(120, 220, 120) end
+			if class:find('Part') or class == 'MeshPart' or class == 'WedgePart' then return 'P', Color3.fromRGB(140, 220, 255) end
+			if class:find('Gui') or class == 'Frame' or class:find('Text') or class:find('Button') or class == 'ImageLabel' then return 'G', Color3.fromRGB(200, 160, 255) end
+			if class:find('Value') or class == 'NumberValue' or class == 'StringValue' or class == 'BoolValue' or class == 'ObjectValue' then return 'V', Color3.fromRGB(255, 150, 150) end
+			if class:find('Service') or class == 'Workspace' or class == 'Lighting' or class == 'Players' or class == 'ReplicatedStorage' or class == 'ServerStorage' then return '#', ACCENT end
+			return '*', DIM
+		end
+
+		local function clearFrame(f, keep)
+			for _, c in ipairs(f:GetChildren()) do
+				if (c:IsA('TextButton') or c:IsA('TextLabel') or c:IsA('TextBox') or c:IsA('Frame')) and c ~= keep then
 					c:Destroy()
 				end
 			end
-			crumb.Text = node:GetFullName()
-			local kids = {}
-			pcall(function()
-				kids = node:GetChildren()
-			end)
-			table.sort(kids, function(a, b)
-				return a.Name:lower() < b.Name:lower()
-			end)
-			for _, inst in ipairs(kids) do
-				local b = Instance.new('TextButton')
-				b.Size = UDim2.new(1, -4, 0, 20)
-				b.BackgroundTransparency = 1
-				b.TextColor3 = (inst == selected) and ACCENT or TEXT
-				b.Font = Enum.Font.Code
-				b.TextSize = 12
-				b.TextXAlignment = Enum.TextXAlignment.Left
-				local nchild = 0
-				pcall(function()
-					nchild = #inst:GetChildren()
-				end)
-				b.Text = (nchild > 0 and '+ ' or '- ') .. inst.Name .. ' [' .. inst.ClassName .. ']'
-				b.Parent = list
-				b.MouseButton1Click:Connect(function()
-					selected = inst
-					info.Text = inst.ClassName .. '  |  ' .. inst:GetFullName():sub(1, 90)
-					if nchild > 0 then
-						node = inst
-						refresh()
-					else
-						refresh()
+		end
+
+		local function propRow(name, get, set)
+			local ok, val = pcall(get)
+			if not ok then
+				return
+			end
+			local ro = (set == nil)
+			local row = Instance.new('Frame')
+			row.Size = UDim2.new(1, -4, 0, 20)
+			row.BackgroundTransparency = 1
+			row.LayoutOrder = 9999
+			row.Parent = props
+			local nl = Instance.new('TextLabel')
+			nl.Size = UDim2.new(0.42, 0, 1, 0)
+			nl.BackgroundTransparency = 1
+			nl.TextColor3 = ro and DIM or TEXT
+			nl.Font = Enum.Font.Code
+			nl.TextSize = 12
+			nl.TextXAlignment = Enum.TextXAlignment.Left
+			nl.Text = tostring(name)
+			nl.Parent = row
+			local vt = type(val) == 'userdata' and tostring(val):sub(1, 40) or tostring(val):sub(1, 60)
+			if ro then
+				local vl = Instance.new('TextLabel')
+				vl.Size = UDim2.new(0.58, 0, 1, 0)
+				vl.Position = UDim2.new(0.42, 0, 0, 0)
+				vl.BackgroundTransparency = 1
+				vl.TextColor3 = DIM
+				vl.Font = Enum.Font.Code
+				vl.TextSize = 12
+				vl.TextXAlignment = Enum.TextXAlignment.Left
+				vl.TextTruncate = Enum.TextTruncate.AtEnd
+				vl.Text = vt
+				vl.Parent = row
+			else
+				local vb = Instance.new('TextBox')
+				vb.Size = UDim2.new(0.58, 0, 1, 0)
+				vb.Position = UDim2.new(0.42, 0, 0, 0)
+				vb.BackgroundColor3 = PANEL2
+				vb.BorderSizePixel = 0
+				vb.TextColor3 = ACCENT
+				vb.Font = Enum.Font.Code
+				vb.TextSize = 12
+				vb.TextXAlignment = Enum.TextXAlignment.Left
+				vb.ClearTextOnFocus = false
+				vb.Text = vt
+				vb.Parent = row
+				vb.FocusLost:Connect(function(enter)
+					if enter then
+						pcall(set, vb.Text)
 					end
 				end)
 			end
 		end
-		mkButton(pg, 'Back', UDim2.new(0, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
-			if node ~= game then
-				node = node.Parent or game
-				refresh()
+
+		local function numSet(inst, prop)
+			return function(text)
+				local n = tonumber(text)
+				if n then
+					inst[prop] = n
+				end
 			end
-		end)
-		mkButton(pg, 'Copy Path', UDim2.new(0.25, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
+		end
+		local function boolSet(inst, prop)
+			return function(text)
+				text = tostring(text):lower()
+				if text == 'true' or text == '1' then
+					inst[prop] = true
+				elseif text == 'false' or text == '0' then
+					inst[prop] = false
+				end
+			end
+		end
+
+		local function showProps(inst)
+			clearFrame(props)
+			if not inst then
+				return
+			end
+			propRow('Class', function() return inst.ClassName end, nil)
+			propRow('Name', function() return inst.Name end, function(t)
+				inst.Name = tostring(t)
+			end)
+			pcall(function()
+				propRow('Parent', function() return inst.Parent and inst.Parent.Name or '(nil)' end, nil)
+			end)
+			if inst:IsA('BasePart') then
+				propRow('Position', function() return tostring(inst.Position) end, nil)
+				propRow('Size', function() return tostring(inst.Size) end, nil)
+				propRow('Transparency', function() return inst.Transparency end, numSet(inst, 'Transparency'))
+				propRow('Anchored', function() return tostring(inst.Anchored) end, boolSet(inst, 'Anchored'))
+				propRow('CanCollide', function() return tostring(inst.CanCollide) end, boolSet(inst, 'CanCollide'))
+			end
+			if inst:IsA('GuiObject') then
+				propRow('Visible', function() return tostring(inst.Visible) end, boolSet(inst, 'Visible'))
+				propRow('Position', function() return tostring(inst.Position) end, nil)
+				propRow('Size', function() return tostring(inst.Size) end, nil)
+				propRow('BgTrans', function() return inst.BackgroundTransparency end, numSet(inst, 'BackgroundTransparency'))
+			end
+			if inst:IsA('TextLabel') or inst:IsA('TextButton') or inst:IsA('TextBox') then
+				propRow('Text', function() return inst.Text end, function(t)
+					inst.Text = tostring(t)
+				end)
+			end
+			if inst:IsA('ValueBase') then
+				propRow('Value', function() return inst.Value end, function(t)
+					local cur = inst.Value
+					if type(cur) == 'number' then
+						local n = tonumber(t)
+						if n then
+							inst.Value = n
+						end
+					elseif type(cur) == 'boolean' then
+						boolSet(inst, 'Value')(t)
+					elseif type(cur) == 'string' then
+						inst.Value = tostring(t)
+					end
+				end)
+			end
+			if inst:IsA('Humanoid') then
+				propRow('Health', function() return inst.Health end, numSet(inst, 'Health'))
+				propRow('WalkSpeed', function() return inst.WalkSpeed end, numSet(inst, 'WalkSpeed'))
+				propRow('JumpPower', function() return inst.JumpPower end, numSet(inst, 'JumpPower'))
+			end
+		end
+
+		local function addRow(inst, depth, order)
+			if rowCount >= MAX_ROWS then
+				return
+			end
+			rowCount += 1
+			local kids = {}
+			pcall(function()
+				kids = inst:GetChildren()
+			end)
+			table.sort(kids, function(a, b)
+				return a.Name:lower() < b.Name:lower()
+			end)
+			local hasKids = #kids > 0
+			local row = Instance.new('Frame')
+			row.Size = UDim2.new(1, -4, 0, 20)
+			row.BackgroundTransparency = 1
+			row.LayoutOrder = order
+			row.Parent = tree
+			local tg = Instance.new('TextButton')
+			tg.Size = UDim2.new(0, 18, 1, 0)
+			tg.Position = UDim2.new(0, depth * 14, 0, 0)
+			tg.BackgroundTransparency = 1
+			tg.TextColor3 = DIM
+			tg.Font = Enum.Font.Code
+			tg.TextSize = 12
+			tg.Text = hasKids and (expanded[inst] and '-' or '+') or ''
+			tg.Parent = row
+			local tag, tagColor = classTag(inst.ClassName)
+			local ic = Instance.new('TextLabel')
+			ic.Size = UDim2.new(0, 16, 1, 0)
+			ic.Position = UDim2.new(0, depth * 14 + 18, 0, 0)
+			ic.BackgroundTransparency = 1
+			ic.TextColor3 = tagColor
+			ic.Font = Enum.Font.GothamBold
+			ic.TextSize = 12
+			ic.Text = tag
+			ic.Parent = row
+			local nm = Instance.new('TextButton')
+			nm.Size = UDim2.new(1, -(depth * 14 + 36), 1, 0)
+			nm.Position = UDim2.new(0, depth * 14 + 36, 0, 0)
+			nm.BackgroundTransparency = 1
+			nm.TextColor3 = (inst == selected) and ACCENT or TEXT
+			nm.Font = Enum.Font.Code
+			nm.TextSize = 12
+			nm.TextXAlignment = Enum.TextXAlignment.Left
+			nm.TextTruncate = Enum.TextTruncate.AtEnd
+			nm.Text = inst.Name
+			nm.Parent = row
+			nm.MouseButton1Click:Connect(function()
+				selected = inst
+				showProps(inst)
+				refreshTree()
+			end)
+			if hasKids then
+				tg.MouseButton1Click:Connect(function()
+					expanded[inst] = not expanded[inst]
+					refreshTree()
+				end)
+				if expanded[inst] then
+					for _, k in ipairs(kids) do
+						addRow(k, depth + 1, order * 1000 + rowCount)
+					end
+				end
+			end
+		end
+
+		function refreshTree()
+			clearFrame(tree)
+			rowCount = 0
+			local q = searchBox.Text:lower()
+			if q ~= '' and q ~= 'search...' then
+				local all = {}
+				pcall(function()
+					all = game:GetDescendants()
+				end)
+				local shown = 0
+				for _, inst in ipairs(all) do
+					if shown >= 400 then
+						break
+					end
+					local ok, nm = pcall(function()
+						return inst.Name
+					end)
+					if ok and nm:lower():find(q, 1, true) then
+						shown += 1
+						local b = Instance.new('TextButton')
+						b.Size = UDim2.new(1, -4, 0, 20)
+						b.BackgroundTransparency = 1
+						b.TextColor3 = (inst == selected) and ACCENT or TEXT
+						b.Font = Enum.Font.Code
+						b.TextSize = 12
+						b.TextXAlignment = Enum.TextXAlignment.Left
+						b.TextTruncate = Enum.TextTruncate.AtEnd
+						b.Text = nm .. ' [' .. inst.ClassName .. ']'
+						b.LayoutOrder = shown
+						b.Parent = tree
+						b.MouseButton1Click:Connect(function()
+							selected = inst
+							showProps(inst)
+							refreshTree()
+						end)
+					end
+				end
+				countLabel.Text = tostring(shown) .. ' matches'
+			else
+				local roots = {}
+				pcall(function()
+					roots = game:GetChildren()
+				end)
+				table.sort(roots, function(a, b)
+					return a.Name:lower() < b.Name:lower()
+				end)
+				for i, inst in ipairs(roots) do
+					addRow(inst, 0, i)
+				end
+				countLabel.Text = tostring(rowCount) .. ' nodes'
+			end
+		end
+
+		mkButton(pg, 'Copy Path', UDim2.new(0, 0, 1, -24), UDim2.new(0.33, -4, 0, 22), function()
 			if selected then
 				setclipboard(selected:GetFullName())
-				info.Text = 'path copied'
 			end
 		end)
-		mkButton(pg, 'Goto', UDim2.new(0.5, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
+		mkButton(pg, 'Goto', UDim2.new(0.33, 0, 1, -24), UDim2.new(0.33, -4, 0, 22), function()
 			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild('HumanoidRootPart')
 			local target = nil
 			if selected then
@@ -3189,13 +3471,24 @@ pcall(function()
 			end
 			if hrp and target then
 				hrp.CFrame = target + Vector3.new(0, 5, 0)
-				info.Text = 'teleported'
-			else
-				info.Text = 'no target / no character'
 			end
 		end)
-		mkButton(pg, 'Refresh', UDim2.new(0.75, 0, 1, -40), UDim2.new(0.25, 0, 0, 20), refresh)
-		refresh()
+		mkButton(pg, 'Delete', UDim2.new(0.66, 0, 1, -24), UDim2.new(0.34, 0, 0, 22), function()
+			if selected then
+				pcall(function()
+					selected:Destroy()
+				end)
+				selected = nil
+				refreshTree()
+			end
+		end)
+		mkButton(pg, 'Refresh', UDim2.new(0.55, 0, 0, 0), UDim2.new(0.45, 0, 0, 22), refreshTree)
+		searchBox.FocusLost:Connect(function(enter)
+			if enter then
+				refreshTree()
+			end
+		end)
+		refreshTree()
 	end
 
 	-- Player page
