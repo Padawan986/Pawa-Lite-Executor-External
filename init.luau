@@ -2954,6 +2954,401 @@ pcall(function()
 	end
 end)
 
+-- Pawa in-game menu (toggle with INSERT): executor console, game
+-- explorer, player tools, server tools. Pure Lua GUI, no kick surface.
+pcall(function()
+	local Players = game:GetService('Players')
+	local UIS = game:GetService('UserInputService')
+	local TeleportService = game:GetService('TeleportService')
+	local RunService = game:GetService('RunService')
+	local LocalPlayer = Players.LocalPlayer
+	if not LocalPlayer then
+		return
+	end
+
+	local ACCENT = Color3.fromRGB(138, 92, 246)
+	local BG = Color3.fromRGB(17, 17, 24)
+	local PANEL = Color3.fromRGB(28, 28, 38)
+	local TEXT = Color3.fromRGB(235, 235, 245)
+
+	local gui = Instance.new('ScreenGui')
+	gui.Name = 'PawaLiteMenu'
+	gui.ResetOnSpawn = false
+	gui.DisplayOrder = 9999
+	gui.IgnoreGuiInset = true
+	gui.Parent = gethui()
+
+	local main = Instance.new('Frame')
+	main.Name = 'Main'
+	main.Size = UDim2.new(0, 560, 0, 380)
+	main.Position = UDim2.new(0.5, -280, 0.5, -190)
+	main.BackgroundColor3 = BG
+	main.BorderSizePixel = 0
+	main.Active = true
+	main.Draggable = true
+	main.Visible = false
+	main.Parent = gui
+
+	local corner = Instance.new('UICorner')
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = main
+
+	local title = Instance.new('TextLabel')
+	title.Size = UDim2.new(1, 0, 0, 32)
+	title.BackgroundColor3 = PANEL
+	title.Text = '  Pawa-Lite  (INSERT toggles)'
+	title.TextColor3 = ACCENT
+	title.Font = Enum.Font.GothamBold
+	title.TextSize = 15
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Parent = main
+
+	local tabs = Instance.new('Frame')
+	tabs.Size = UDim2.new(1, 0, 0, 30)
+	tabs.Position = UDim2.new(0, 0, 0, 32)
+	tabs.BackgroundTransparency = 1
+	tabs.Parent = main
+
+	local pages = {}
+	local pageNames = {'Execute', 'Explorer', 'Player', 'Server'}
+	local function showPage(name)
+		for n, pg in pairs(pages) do
+			pg.Visible = (n == name)
+		end
+	end
+	for i, name in ipairs(pageNames) do
+		local b = Instance.new('TextButton')
+		b.Size = UDim2.new(0.25, -2, 1, 0)
+		b.Position = UDim2.new((i - 1) * 0.25, 1, 0, 0)
+		b.BackgroundColor3 = PANEL
+		b.TextColor3 = TEXT
+		b.Font = Enum.Font.Gotham
+		b.TextSize = 13
+		b.Text = name
+		b.Parent = tabs
+		local pg = Instance.new('Frame')
+		pg.Size = UDim2.new(1, -12, 1, -70)
+		pg.Position = UDim2.new(0, 6, 0, 64)
+		pg.BackgroundTransparency = 1
+		pg.Visible = (i == 1)
+		pg.Parent = main
+		pages[name] = pg
+		b.MouseButton1Click:Connect(function()
+			showPage(name)
+		end)
+	end
+
+	local function mkLabel(parent, text, y, h)
+		local l = Instance.new('TextLabel')
+		l.Size = UDim2.new(1, 0, 0, h or 20)
+		l.Position = UDim2.new(0, 0, 0, y)
+		l.BackgroundTransparency = 1
+		l.TextColor3 = TEXT
+		l.Font = Enum.Font.Gotham
+		l.TextSize = 13
+		l.TextXAlignment = Enum.TextXAlignment.Left
+		l.Text = text
+		l.Parent = parent
+		return l
+	end
+
+	local function mkButton(parent, text, pos, size, cb)
+		local b = Instance.new('TextButton')
+		b.Size = size
+		b.Position = pos
+		b.BackgroundColor3 = ACCENT
+		b.TextColor3 = Color3.fromRGB(255, 255, 255)
+		b.Font = Enum.Font.GothamBold
+		b.TextSize = 13
+		b.Text = text
+		b.Parent = parent
+		b.MouseButton1Click:Connect(function()
+			pcall(cb)
+		end)
+		return b
+	end
+
+	local function mkBox(parent, text, pos, size, multi)
+		local t = Instance.new('TextBox')
+		t.Size = size
+		t.Position = pos
+		t.BackgroundColor3 = PANEL
+		t.TextColor3 = TEXT
+		t.Font = Enum.Font.Code
+		t.TextSize = 13
+		t.TextXAlignment = Enum.TextXAlignment.Left
+		t.TextYAlignment = Enum.TextYAlignment.Top
+		t.MultiLine = multi and true or false
+		t.ClearTextOnFocus = false
+		t.Text = text or ''
+		t.Parent = parent
+		return t
+	end
+
+	-- Execute page
+	do
+		local pg = pages['Execute']
+		local box = mkBox(pg, '-- paste script here', UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 1, -56), true)
+		local out = mkLabel(pg, 'ready', 1, 20)
+		out.Size = UDim2.new(1, 0, 0, 20)
+		out.Position = UDim2.new(0, 0, 1, -48)
+		mkButton(pg, 'Run', UDim2.new(0, 0, 1, -26), UDim2.new(0.5, -3, 0, 24), function()
+			local fn, err = loadstring(box.Text, 'PawaMenu')
+			if not fn then
+				out.Text = 'compile: ' .. tostring(err):sub(1, 120)
+				return
+			end
+			local ok, res = pcall(fn)
+			out.Text = ok and ('ok' .. (res ~= nil and (': ' .. tostring(res):sub(1, 100)) or '')) or ('runtime: ' .. tostring(res):sub(1, 120))
+		end)
+		mkButton(pg, 'Clear', UDim2.new(0.5, 3, 1, -26), UDim2.new(0.5, -3, 0, 24), function()
+			box.Text = ''
+			out.Text = 'ready'
+		end)
+	end
+
+	-- Explorer page
+	do
+		local pg = pages['Explorer']
+		local crumb = mkLabel(pg, 'game', 0, 20)
+		local list = Instance.new('ScrollingFrame')
+		list.Size = UDim2.new(1, 0, 1, -84)
+		list.Position = UDim2.new(0, 0, 0, 22)
+		list.BackgroundColor3 = PANEL
+		list.BorderSizePixel = 0
+		list.ScrollBarThickness = 4
+		list.Parent = pg
+		local layout = Instance.new('UIListLayout')
+		layout.SortOrder = Enum.SortOrder.Name
+		layout.Parent = list
+		local node = game
+		local selected = nil
+		local info = mkLabel(pg, '', 1, 20)
+		info.Position = UDim2.new(0, 0, 1, -62)
+		local function refresh()
+			for _, c in ipairs(list:GetChildren()) do
+				if c:IsA('TextButton') then
+					c:Destroy()
+				end
+			end
+			crumb.Text = node:GetFullName()
+			local kids = {}
+			pcall(function()
+				kids = node:GetChildren()
+			end)
+			table.sort(kids, function(a, b)
+				return a.Name:lower() < b.Name:lower()
+			end)
+			for _, inst in ipairs(kids) do
+				local b = Instance.new('TextButton')
+				b.Size = UDim2.new(1, -4, 0, 20)
+				b.BackgroundTransparency = 1
+				b.TextColor3 = (inst == selected) and ACCENT or TEXT
+				b.Font = Enum.Font.Code
+				b.TextSize = 12
+				b.TextXAlignment = Enum.TextXAlignment.Left
+				local nchild = 0
+				pcall(function()
+					nchild = #inst:GetChildren()
+				end)
+				b.Text = (nchild > 0 and '+ ' or '- ') .. inst.Name .. ' [' .. inst.ClassName .. ']'
+				b.Parent = list
+				b.MouseButton1Click:Connect(function()
+					selected = inst
+					info.Text = inst.ClassName .. '  |  ' .. inst:GetFullName():sub(1, 90)
+					if nchild > 0 then
+						node = inst
+						refresh()
+					else
+						refresh()
+					end
+				end)
+			end
+		end
+		mkButton(pg, 'Back', UDim2.new(0, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
+			if node ~= game then
+				node = node.Parent or game
+				refresh()
+			end
+		end)
+		mkButton(pg, 'Copy Path', UDim2.new(0.25, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
+			if selected then
+				setclipboard(selected:GetFullName())
+				info.Text = 'path copied'
+			end
+		end)
+		mkButton(pg, 'Goto', UDim2.new(0.5, 0, 1, -40), UDim2.new(0.25, -4, 0, 20), function()
+			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild('HumanoidRootPart')
+			local target = nil
+			if selected then
+				if selected:IsA('BasePart') then
+					target = selected.CFrame
+				elseif selected:IsA('Model') and selected.PrimaryPart then
+					target = selected.PrimaryPart.CFrame
+				end
+			end
+			if hrp and target then
+				hrp.CFrame = target + Vector3.new(0, 5, 0)
+				info.Text = 'teleported'
+			else
+				info.Text = 'no target / no character'
+			end
+		end)
+		mkButton(pg, 'Refresh', UDim2.new(0.75, 0, 1, -40), UDim2.new(0.25, 0, 0, 20), refresh)
+		refresh()
+	end
+
+	-- Player page
+	do
+		local pg = pages['Player']
+		mkLabel(pg, 'LocalPlayer', 0, 20)
+		local wsBox = mkBox(pg, '16', UDim2.new(0, 90, 0, 0), UDim2.new(0, 60, 0, 20), false)
+		mkLabel(pg, 'WalkSpeed', 0, 20).Size = UDim2.new(0, 90, 0, 20)
+		local jpBox = mkBox(pg, '50', UDim2.new(0, 250, 0, 0), UDim2.new(0, 60, 0, 20), false)
+		local jpLabel = mkLabel(pg, 'JumpPower', 0, 20)
+		jpLabel.Position = UDim2.new(0, 160, 0, 0)
+		jpLabel.Size = UDim2.new(0, 90, 0, 20)
+		mkButton(pg, 'Set', UDim2.new(0, 320, 0, 0), UDim2.new(0, 60, 0, 20), function()
+			local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+			if hum then
+				hum.WalkSpeed = tonumber(wsBox.Text) or 16
+				hum.JumpPower = tonumber(jpBox.Text) or 50
+			end
+		end)
+		local noclipConn = nil
+		mkButton(pg, 'Noclip: off', UDim2.new(0, 390, 0, 0), UDim2.new(0, 110, 0, 20), function()
+		end)
+		local ijConn = nil
+		-- wire toggles by lookup (buttons created above, in order)
+		local btns = {}
+		for _, c in ipairs(pg:GetChildren()) do
+			if c:IsA('TextButton') then
+				btns[#btns + 1] = c
+			end
+		end
+		-- btns[1] = Set, btns[2] = Noclip; add InfJump as third
+		mkButton(pg, 'InfJump: off', UDim2.new(0, 0, 0, 24), UDim2.new(0, 110, 0, 20), function()
+		end)
+		btns = {}
+		for _, c in ipairs(pg:GetChildren()) do
+			if c:IsA('TextButton') then
+				btns[#btns + 1] = c
+			end
+		end
+		local noclipOn, ijOn = false, false
+		for _, b in ipairs(btns) do
+			if b.Text:find('Noclip') then
+				b.MouseButton1Click:Connect(function()
+					noclipOn = not noclipOn
+					b.Text = noclipOn and 'Noclip: on' or 'Noclip: off'
+					if noclipOn then
+						noclipConn = RunService.Stepped:Connect(function()
+							local ch = LocalPlayer.Character
+							if ch then
+								for _, p in ipairs(ch:GetDescendants()) do
+									if p:IsA('BasePart') then
+										p.CanCollide = false
+									end
+								end
+							end
+						end)
+					elseif noclipConn then
+						noclipConn:Disconnect()
+						noclipConn = nil
+					end
+				end)
+			elseif b.Text:find('InfJump') then
+				b.MouseButton1Click:Connect(function()
+					ijOn = not ijOn
+					b.Text = ijOn and 'InfJump: on' or 'InfJump: off'
+					if ijOn then
+						ijConn = UIS.JumpRequest:Connect(function()
+							local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+							if hum then
+								hum:ChangeState(Enum.HumanoidStateType.Jumping)
+							end
+						end)
+					elseif ijConn then
+						ijConn:Disconnect()
+						ijConn = nil
+					end
+				end)
+			end
+		end
+		mkLabel(pg, 'Players (click = teleport)', 48, 20)
+		local plist = Instance.new('ScrollingFrame')
+		plist.Size = UDim2.new(1, 0, 1, -70)
+		plist.Position = UDim2.new(0, 0, 0, 70)
+		plist.BackgroundColor3 = PANEL
+		plist.BorderSizePixel = 0
+		plist.ScrollBarThickness = 4
+		plist.Parent = pg
+		local playout = Instance.new('UIListLayout')
+		playout.SortOrder = Enum.SortOrder.Name
+		playout.Parent = plist
+		local function refreshPlayers()
+			for _, c in ipairs(plist:GetChildren()) do
+				if c:IsA('TextButton') then
+					c:Destroy()
+				end
+			end
+			for _, plr in ipairs(Players:GetPlayers()) do
+				local b = Instance.new('TextButton')
+				b.Size = UDim2.new(1, -4, 0, 20)
+				b.BackgroundTransparency = 1
+				b.TextColor3 = (plr == LocalPlayer) and ACCENT or TEXT
+				b.Font = Enum.Font.Code
+				b.TextSize = 12
+				b.TextXAlignment = Enum.TextXAlignment.Left
+				b.Text = plr.Name .. ' [' .. tostring(plr.UserId) .. ']'
+				b.Parent = plist
+				b.MouseButton1Click:Connect(function()
+					local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild('HumanoidRootPart')
+					local tchr = plr.Character
+					local thrp = tchr and tchr:FindFirstChild('HumanoidRootPart')
+					if hrp and thrp then
+						hrp.CFrame = thrp.CFrame + Vector3.new(0, 0, -4)
+					end
+				end)
+			end
+		end
+		mkButton(pg, 'Refresh', UDim2.new(1, -80, 0, 46), UDim2.new(0, 80, 0, 20), refreshPlayers)
+		refreshPlayers()
+	end
+
+	-- Server page
+	do
+		local pg = pages['Server']
+		mkLabel(pg, 'PlaceId: ' .. tostring(game.PlaceId), 0, 20)
+		mkLabel(pg, 'JobId: ' .. tostring(game.JobId):sub(1, 60), 22, 20)
+		mkLabel(pg, 'Players: ' .. tostring(#Players:GetPlayers()) .. '/' .. tostring(Players.MaxPlayers), 44, 20)
+		mkLabel(pg, 'UserId: ' .. tostring(LocalPlayer.UserId), 66, 20)
+		mkButton(pg, 'Copy JobId', UDim2.new(0, 0, 0, 92), UDim2.new(0, 120, 0, 24), function()
+			setclipboard(tostring(game.JobId))
+		end)
+		mkButton(pg, 'Rejoin', UDim2.new(0, 130, 0, 92), UDim2.new(0, 120, 0, 24), function()
+			TeleportService:Teleport(game.PlaceId)
+		end)
+		mkButton(pg, 'Serverhop', UDim2.new(0, 260, 0, 92), UDim2.new(0, 120, 0, 24), function()
+			local servers = game:HttpGet('https://games.roblox.com/v1/games/' .. tostring(game.PlaceId) .. '/servers/Public?limit=100')
+			local id = servers:match('"id":"([%w%-]+)".-"playing":(%d+)')
+			if id then
+				TeleportService:TeleportToPlaceInstance(game.PlaceId, id)
+			end
+		end)
+	end
+
+	UIS.InputBegan:Connect(function(input, gpe)
+		if gpe then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.Insert then
+			main.Visible = not main.Visible
+		end
+	end)
+	print('Pawa-Lite(Beta)V2 -- menu ready (press INSERT)')
+end)
+
 pcall(flush_teleport_queue)
 
 task.spawn(function()
