@@ -2945,6 +2945,15 @@ task.spawn(function()
 	end
 end)
 
+pcall(function()
+	local v = send_method('init_version')
+	if type(v) == 'string' and #v > 0 and #v < 64 and v ~= 'fail' then
+		print('Pawa-Lite(Beta)V2 -- attached (init ' .. v .. ')')
+	else
+		print('Pawa-Lite(Beta)V2 -- attached')
+	end
+end)
+
 pcall(flush_teleport_queue)
 
 task.spawn(function()
