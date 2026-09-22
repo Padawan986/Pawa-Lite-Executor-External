@@ -2256,8 +2256,45 @@ getcallbackvalue = function(inst, property)
 	return nil
 end
 
+-- Hosts whose responses depend on the player's auth cookies (balance,
+-- trades, payouts, identity, chat, ...). Scripts must not reach them
+-- through request(): fail closed with an error (fail = mitigated).
+local blocked_api_hosts = {
+	['economy.roblox.com'] = true,
+	['trades.roblox.com'] = true,
+	['groups.roblox.com'] = true,
+	['users.roblox.com'] = true,
+	['friends.roblox.com'] = true,
+	['chat.roblox.com'] = true,
+	['accountsettings.roblox.com'] = true,
+	['accountinformation.roblox.com'] = true,
+	['auth.roblox.com'] = true,
+	['apis.roblox.com'] = true,
+	['api.roblox.com'] = true,
+	['billing.roblox.com'] = true,
+	['premiumfeatures.roblox.com'] = true,
+	['www.roblox.com'] = true,
+	['roblox.com'] = true,
+}
+
+local function blocked_api_host(url)
+	local host = tostring(url or ''):lower():match('^%s*https?://([^/%?#:]+)') or ''
+	host = host:gsub(':%d+$', '')
+	for blocked in pairs(blocked_api_hosts) do
+		if host == blocked or host:sub(-#blocked - 1) == ('.' .. blocked) then
+			return host
+		end
+	end
+	return nil
+end
+
 request = function(options)
 	assert(type(options) == 'table' and type(options.Url) == 'string', "invalid argument #1 to 'request' (table with Url expected, got " .. type(options) .. ')', 2)
+
+	local bad = blocked_api_host(options.Url)
+	if bad then
+		error('Pawa-Lite(Beta)V2 -- request blocked: Roblox API host (' .. bad .. ')', 2)
+	end
 
 	local headers = {}
 	if type(options.Headers) == 'table' then
@@ -2549,8 +2586,19 @@ dofile = function(path, ...)
 	return assert(loadfile(path))(...)
 end
 
-getgc = function()
-	return {print, warn, table, string, math, task}
+getgc = function(includeTables)
+	-- We cannot enumerate the real GC from Lua; return a stable,
+	-- shape-compatible set. Tables only when explicitly requested.
+	local funcs = {print, warn, error, assert, pcall, xpcall, require, tick}
+	if includeTables then
+		funcs[#funcs + 1] = table
+		funcs[#funcs + 1] = string
+		funcs[#funcs + 1] = math
+		funcs[#funcs + 1] = task
+		funcs[#funcs + 1] = coroutine
+		funcs[#funcs + 1] = os
+	end
+	return funcs
 end
 
 -- NOTE: no `http = ...` here on purpose. `http` is the local HttpService
