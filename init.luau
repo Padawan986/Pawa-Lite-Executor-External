@@ -3725,3 +3725,134 @@ task.spawn(function()
 		end
 	end
 end)
+-- Fullscreen injection animation (runs on every inject).
+pcall(function()
+	local TweenService = game:GetService("TweenService")
+	local Players = game:GetService("Players")
+
+	local LocalPlayer = Players.LocalPlayer
+	if not LocalPlayer then
+		return
+	end
+	local PlayerGui = LocalPlayer:WaitForChild("PlayerGui", 10)
+	if not PlayerGui then
+		return
+	end
+
+	-- Altes UI entfernen, falls bereits vorhanden
+	if PlayerGui:FindFirstChild("PawaInjectAnim") then
+		PlayerGui.PawaInjectAnim:Destroy()
+	end
+
+	-- 1. ScreenGui (Vollbild Overlay)
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Name = "PawaInjectAnim"
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.IgnoreGuiInset = true
+	ScreenGui.DisplayOrder = 99999
+	ScreenGui.Parent = PlayerGui
+
+	-- 2. Dunkler Hintergrund (Startet transparent)
+	local Background = Instance.new("Frame")
+	Background.Size = UDim2.new(1, 0, 1, 0)
+	Background.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
+	Background.BackgroundTransparency = 1
+	Background.BorderSizePixel = 0
+	Background.Parent = ScreenGui
+
+	-- 3. Neon Rainbow Ring
+	local Ring = Instance.new("Frame")
+	Ring.Size = UDim2.new(0, 0, 0, 0)
+	Ring.Position = UDim2.new(0.5, 0, 0.45, 0)
+	Ring.AnchorPoint = Vector2.new(0.5, 0.5)
+	Ring.BackgroundTransparency = 1
+	Ring.Parent = Background
+
+	local RingCorner = Instance.new("UICorner")
+	RingCorner.CornerRadius = UDim.new(1, 0)
+	RingCorner.Parent = Ring
+
+	local RingStroke = Instance.new("UIStroke")
+	RingStroke.Thickness = 5
+	RingStroke.Color = Color3.fromRGB(0, 230, 255)
+	RingStroke.Transparency = 1
+	RingStroke.Parent = Ring
+
+	local RingGradient = Instance.new("UIGradient")
+	RingGradient.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 128)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 200)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 0, 255))
+	}
+	RingGradient.Parent = RingStroke
+
+	-- 4. Titel-Text
+	local Title = Instance.new("TextLabel")
+	Title.Size = UDim2.new(1, 0, 0, 80)
+	Title.Position = UDim2.new(0.5, 0, 0.45, 0)
+	Title.AnchorPoint = Vector2.new(0.5, 0.5)
+	Title.Text = "Pawa-Lite-External-Executor"
+	Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Title.Font = Enum.Font.GothamBlack
+	Title.TextSize = 0
+	Title.TextTransparency = 1
+	Title.BackgroundTransparency = 1
+	Title.Parent = Background
+
+	local Subtitle = Instance.new("TextLabel")
+	Subtitle.Size = UDim2.new(1, 0, 0, 30)
+	Subtitle.Position = UDim2.new(0.5, 0, 0.54, 0)
+	Subtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+	Subtitle.Text = "[ SUCCESSFULLY INJECTED ]"
+	Subtitle.TextColor3 = Color3.fromRGB(0, 255, 170)
+	Subtitle.Font = Enum.Font.Code
+	Subtitle.TextSize = 16
+	Subtitle.TextTransparency = 1
+	Subtitle.BackgroundTransparency = 1
+	Subtitle.Parent = Background
+
+	-- Kontinuierliche Rainbow-Rotation
+	task.spawn(function()
+		local rot = 0
+		while ScreenGui and ScreenGui.Parent do
+			rot = (rot + 5) % 360
+			RingGradient.Rotation = rot
+			task.wait(0.015)
+		end
+	end)
+
+	-- 5-Sekunden Ablauf
+	task.spawn(function()
+		TweenService:Create(Background, TweenInfo.new(0.4), {BackgroundTransparency = 0.15}):Play()
+
+		TweenService:Create(Title, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			TextSize = 46,
+			TextTransparency = 0
+		}):Play()
+
+		TweenService:Create(Ring, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, 420, 0, 420)
+		}):Play()
+		TweenService:Create(RingStroke, TweenInfo.new(0.8), {Transparency = 0}):Play()
+
+		task.wait(0.5)
+
+		TweenService:Create(Subtitle, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+
+		local startTime = tick()
+		while tick() - startTime < 3.1 do
+			local pulse = math.sin(tick() * 3) * 12
+			Ring.Size = UDim2.new(0, 420 + pulse, 0, 420 + pulse)
+			task.wait(0.03)
+		end
+
+		TweenService:Create(Background, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(Title, TweenInfo.new(0.6), {TextTransparency = 1, TextSize = 65}):Play()
+		TweenService:Create(Subtitle, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
+		TweenService:Create(RingStroke, TweenInfo.new(0.6), {Transparency = 1}):Play()
+
+		task.wait(0.8)
+
+		ScreenGui:Destroy()
+	end)
+end)
