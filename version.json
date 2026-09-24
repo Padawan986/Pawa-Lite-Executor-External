@@ -2,5 +2,6 @@
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.2.0",
   "init_version": "2026-09-24.14",
-  "notes": "genv resync + renv.printidentity (identity tests)"
+  "notes": "genv resync + renv.printidentity (identity tests)",
+  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.0/Pawa-Lite.exe"
 }
