@@ -384,6 +384,32 @@ getgenv = function()
 	return genv_table
 end
 
+-- Resolve a global through proxy env chains. The bootstrap env only
+-- carries raw keys; the real globals live behind __index links.
+-- Cycle-guarded (never follows function __index, never revisits tables).
+local function resolve_global(k)
+	local ok, env = pcall(getfenv)
+	local cur = (ok and type(env) == 'table') and env or nil
+	local seen = {}
+	while cur ~= nil and not seen[cur] do
+		seen[cur] = true
+		local v = rawget(cur, k)
+		if v ~= nil then
+			return v
+		end
+		local mt_ok, mt = pcall(getmetatable, cur)
+		if not mt_ok or type(mt) ~= 'table' then
+			break
+		end
+		local ix_ok, ix = pcall(function() return rawget(mt, '__index') end)
+		if not ix_ok or type(ix) ~= 'table' then
+			break
+		end
+		cur = ix
+	end
+	return nil
+end
+
 do
 	local ok = pcall(function()
 		local env = getfenv()
@@ -405,14 +431,10 @@ do
 		rawset(t, k, v)
 		pcall(function() getfenv()[k] = v end)
 	end
-	-- Reads fall back to the real global env (rawget: no metatables, so
-	-- this can never cycle back through env's __index -> genv_table).
+	-- Reads fall back through the real env chain (cycle-guarded; a bare
+	-- rawget would miss every global that only lives behind __index).
 	genv_mt.__index = function(t, k)
-		local env = getfenv()
-		if type(env) == 'table' then
-			return rawget(env, k)
-		end
-		return nil
+		return resolve_global(k)
 	end
 	setmetatable(genv_table, genv_mt)
 	-- Eager snapshot: copy every global into genv_table up front, so
@@ -2745,6 +2767,7 @@ printidentity = newcclosure(function(...)
 	end
 end)
 executor_closures[printidentity] = "printidentity"
+renv_table.printidentity = printidentity
 
 -- debug.getinfo: shape-compatible shim built on the real debug.info.
 -- Executor-owned closures (newcclosure results) report as C closures so
@@ -3642,6 +3665,45 @@ pcall(function()
 	end)
 	print('Pawa-Lite(Beta)V2 -- menu ready (press INSERT)')
 end)
+
+-- Re-sync getgenv with the true current values. The eager snapshot above
+-- only saw the bootstrap env's raw keys (stale natives like printidentity,
+-- missing print). Copy from bare references instead of any env lookup,
+-- so proxy/sparse env topologies cannot interfere.
+do
+	local sync = {
+		print = print, warn = warn, error = error, assert = assert,
+		pcall = pcall, xpcall = xpcall, select = select,
+		tonumber = tonumber, tostring = tostring, type = type,
+		typeof = typeof, tick = tick, wait = wait, spawn = spawn,
+		delay = delay, require = require, math = math, string = string,
+		table = table, os = os, bit32 = bit32, buffer = buffer,
+		utf8 = utf8, coroutine = coroutine, task = task, game = game,
+		workspace = workspace, script = script, Instance = Instance,
+		Enum = Enum, debug = debug, printidentity = printidentity,
+		getgenv = getgenv, getrenv = getrenv, gethui = gethui,
+		gethiddenproperty = gethiddenproperty,
+		cloneref = cloneref, compareinstances = compareinstances,
+		newcclosure = newcclosure,
+		isexecutorclosure = isexecutorclosure, iscclosure = iscclosure,
+		islclosure = islclosure,
+		getthreadidentity = getthreadidentity,
+		setthreadidentity = setthreadidentity,
+		identifyexecutor = identifyexecutor, loadstring = loadstring,
+		getgc = getgc, getconnections = getconnections,
+		request = request, setclipboard = setclipboard,
+		getclipboard = getclipboard, hookmetamethod = hookmetamethod,
+		getrawmetatable = getrawmetatable,
+		setrawmetatable = setrawmetatable, Drawing = Drawing,
+		WebSocket = WebSocket, Signal = Signal, crypt = crypt,
+		base64 = base64,
+	}
+	for k, v in pairs(sync) do
+		if v ~= nil then
+			rawset(genv_table, k, v)
+		end
+	end
+end
 
 pcall(flush_teleport_queue)
 

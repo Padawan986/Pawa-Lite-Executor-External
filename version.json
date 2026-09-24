@@ -1,6 +1,6 @@
 {
   "app": "Pawa-Lite(Beta)V2",
   "app_version": "0.2.0",
-  "init_version": "2026-09-24.13",
-  "notes": "full features rebuilt on clean base"
+  "init_version": "2026-09-24.14",
+  "notes": "genv resync + renv.printidentity (identity tests)"
 }
