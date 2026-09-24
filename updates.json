@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.5",
   "notes": "Auto-update support, FAPI daemon wiring, Pawa-Lite rebrand.",
   "pub_date": "2026-09-14T00:00:00Z",
   "platforms": {
