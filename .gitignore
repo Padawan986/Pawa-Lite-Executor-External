@@ -1,0 +1,20 @@
+# build outputs & caches
+bunni-ui-main/src-tauri/target/
+bunni-ui-main/node_modules/
+bunni-ui-main/.svelte-kit/
+bunni-ui-main/build/
+__pycache__/
+*.py[cod]
+github-release/.cache/
+# local binaries (rebuilt via cargo / build_dll.bat)
+*.exe
+!src/FAPI/luau/compile.exe
+*.zip
+*.msi
+# app data
+offset_cache.json
+remote_init.*
+bytecode_cache/
+.DS_Store
+Untitled-1
+Textdokument (neu).txt

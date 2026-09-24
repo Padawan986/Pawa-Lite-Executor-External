@@ -1,0 +1,35 @@
+Pawa-Lite-Executor-External: publish guide
+=============================================
+
+GitHub allows letters, digits, '-' '_' '.' in repo names (NO parentheses),
+so the repo must be named exactly:
+
+    Pawa-Lite-Executor-External
+
+1. Create it (public! raw.githubusercontent.com only serves public repos):
+   https://github.com/new
+   - Repository name: Pawa-Lite-Executor-External
+   - Public, no README/license/gitignore (we push our own files)
+
+2. Push this folder's content (run from FunnyExecutor repo root):
+
+    cd "C:\Users\Padawan985\Downloads\Pawa-Lites\FunnyExecutor\github-release"
+    git init -b main
+    git add version.json README.md init.luau
+    git commit -m "Pawa-Lite(Beta)V2 release channel"
+    git remote add origin https://github.com/YOUR-USER/Pawa-Lite-Executor-External.git
+    git push -u origin main
+
+   (Replace YOUR-USER with your GitHub username.)
+
+3. Tell the app where it lives - one place only:
+   file  src/FAPI/bridge.py
+   const UPDATE_USER = "REPLACE_WITH_YOUR_GITHUB_USER"
+   -> your username. Then rebuild the UI bundle once.
+
+4. Publishing an update later:
+   - copy the new src/FAPI/luau/init.luau over github-release/init.luau
+     (or run: py github-release/publish.py)
+   - bump "init_version" in version.json (e.g. date-based 2026-09-14.1)
+   - git add + commit + push. Clients pick it up on next start
+     (background) and use it from the NEXT inject on.
