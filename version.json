@@ -1,7 +1,7 @@
 {
   "app": "Pawa-Lite(Beta)V2",
-  "app_version": "0.2.5",
+  "app_version": "0.2.6",
   "init_version": "2026-09-24.15",
-  "notes": "inject animation + setup naming",
-  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.5/Pawa-Lite.Beta.V2_0.2.0_x64-setup.exe"
+  "notes": "auto inject animation on every inject",
+  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.6/Pawa-Lite.exe"
 }
