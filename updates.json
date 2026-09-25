@@ -1,11 +1,11 @@
 {
-  "version": "0.2.6",
-  "notes": "Auto-update support, FAPI daemon wiring, Pawa-Lite rebrand.",
-  "pub_date": "2026-09-14T00:00:00Z",
+  "version": "0.2.7",
+  "notes": "Pawa-Lite rebrand, real Settings page, tab rename, editor zoom.",
+  "pub_date": "2026-09-25T13:20:00Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUOUtUdE1LcGdHQVhwOUZhUzAzL1pDNUpMbnFLYUgrTkxYT2dJVUhnek56aldvcExoZTRJWGRIaUVNQW4rOWJSRnBacS9OMXRVR1piL2NNem9qTVZlR09ucDVKd1RPZWdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5Mzg4MjMwCWZpbGU6UGF3YS1MaXRlKEJldGEpVjJfMC4yLjBfeDY0LXNldHVwLmV4ZQp2V3VLUmFUcTRKVmtWRDJLZ2RwZk1jU3RGTmtzUmNNbWo0NHp1dHIyeUl6Rzd3Y3o1V2xKdlUwOVJzUkdsMDNqS3JxVWFHN2dYN1VNL012QnBLTFZEZz09Cg==",
-      "url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.0/Pawa-Lite.Beta.V2_0.2.0_x64-setup.exe"
+      "url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.7/Pawa-Lite.exe"
     }
   }
 }
