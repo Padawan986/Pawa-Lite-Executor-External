@@ -2730,6 +2730,38 @@ end
 
 rconsoleerror = rconsoleerr
 
+-- hookfunction: env-table reference swap (pure Lua, Xeno-style).
+-- Covers call sites that resolve through the executor env (bare globals,
+-- getgenv() entries), e.g. hookfunction(print, ...) then print(...).
+-- Direct/local references cannot be swapped without native support, so
+-- the functional UNC test for those stays out of reach. Returns the
+-- original, per contract.
+hookfunction = function(original, hook)
+	assert(type(original) == 'function', "invalid argument #1 to 'hookfunction' (function expected, got " .. type(original) .. ')', 2)
+	assert(type(hook) == 'function', "invalid argument #2 to 'hookfunction' (function expected, got " .. type(hook) .. ')', 2)
+	local function swap_in(env)
+		if type(env) ~= 'table' then
+			return
+		end
+		for k, v in pairs(env) do
+			if v == original then
+				env[k] = hook
+			end
+		end
+	end
+	swap_in(getgenv())
+	local okcaller, caller = pcall(debug.info, 2, 'f')
+	if okcaller and type(caller) == 'function' then
+		local okenv, callerenv = pcall(getfenv, caller)
+		if okenv and type(callerenv) == 'table' and callerenv ~= getgenv() then
+			swap_in(callerenv)
+		end
+	end
+	return original
+end
+
+replaceclosure = hookfunction
+
 -- getconnections: shape-compatible shim (signal introspection is native-only)
 getconnections = function(signal)
 	assert(signal ~= nil, "invalid argument #1 to 'getconnections' (RBXScriptSignal expected)", 2)
@@ -3790,6 +3822,7 @@ do
 		getfunctionhash = getfunctionhash, gethwid = gethwid,
 		whatexecutor = whatexecutor, httpget = httpget,
 		rconsoleerror = rconsoleerror,
+		hookfunction = hookfunction, replaceclosure = replaceclosure,
 	}
 	for k, v in pairs(sync) do
 		if v ~= nil then

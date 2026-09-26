@@ -1,7 +1,7 @@
 {
   "app": "Pawa-Lite(Beta)V2",
-  "app_version": "0.2.8",
-  "init_version": "2026-09-26.1",
-  "notes": "env upgrade: 10 new api functions",
-  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.8/Pawa-Lite.exe"
+  "app_version": "0.2.9",
+  "init_version": "2026-09-26.2",
+  "notes": "hookfunction shim, bridge compile errors",
+  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.9/Pawa-Lite.exe"
 }
