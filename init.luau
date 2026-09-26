@@ -891,6 +891,33 @@ crypt.random = function(size)
 	return table.concat(randomString)
 end
 
+-- normalize an IV to the 16 bytes AES-CBC needs: nil generates a fresh
+-- one (returned base64-encoded as second value, reference behavior),
+-- longer ones truncate deterministically so encrypt/decrypt roundtrip.
+local function normalize_iv(initVector, generate)
+	local ivBytes
+	local ivOut = initVector
+	if initVector == nil then
+		assert(generate, "Initialization vector must be 16 bytes long")
+		ivBytes = table.create(16)
+		for i = 1, 16 do
+			ivBytes[i] = math.random(0, 255)
+		end
+		ivOut = base64encode(string.char(table.unpack(ivBytes, 1, 16)))
+	else
+		ivBytes = AES.to_bytes(base64decode(initVector))
+		if #ivBytes > 16 then
+			local cut = table.create(16)
+			for i = 1, 16 do
+				cut[i] = ivBytes[i]
+			end
+			ivBytes = cut
+		end
+		assert(#ivBytes == 16, "Initialization vector must be 16 bytes long")
+	end
+	return ivBytes, ivOut
+end
+
 crypt.encrypt = function(data, key, initVector, mode)
 	mode = mode or 'CBC'
 	if mode ~= 'CBC' then
@@ -899,8 +926,7 @@ crypt.encrypt = function(data, key, initVector, mode)
 
 	local keyBytes = AES.to_bytes(base64decode(key))
 	assert(#keyBytes == 16 or #keyBytes == 24 or #keyBytes == 32, "Key must be either 16, 24 or 32 bytes long")
-	local ivBytes = AES.to_bytes(base64decode(initVector))
-	assert(#ivBytes == 16, "Initialization vector must be 16 bytes long")
+	local ivBytes, ivOut = normalize_iv(initVector, true)
 
 	local plain = AES.to_bytes(tostring(data))
 	local pad = 16 - (#plain % 16)
@@ -909,7 +935,7 @@ crypt.encrypt = function(data, key, initVector, mode)
 	end
 
 	local cipher = AES.encrypt_CBC(keyBytes, plain, ivBytes)
-	return base64encode(AES.to_string(cipher))
+	return base64encode(AES.to_string(cipher)), ivOut
 end
 
 crypt.decrypt = function(data, key, initVector, mode)
@@ -920,8 +946,7 @@ crypt.decrypt = function(data, key, initVector, mode)
 
 	local keyBytes = AES.to_bytes(base64decode(key))
 	assert(#keyBytes == 16 or #keyBytes == 24 or #keyBytes == 32, "Key must be either 16, 24 or 32 bytes long")
-	local ivBytes = AES.to_bytes(base64decode(initVector))
-	assert(#ivBytes == 16, "Initialization vector must be 16 bytes long")
+	local ivBytes = normalize_iv(initVector, false)
 
 	local plain = AES.decrypt_CBC(keyBytes, AES.to_bytes(base64decode(data)), ivBytes)
 
@@ -2107,20 +2132,48 @@ require = function(mod)
 end
 
 getloadedmodules = function()
-	local result = {}
-	for mod in pairs(loaded_modules) do
-		result[#result + 1] = mod
+	local result, seen = {}, {}
+	local function add(mod)
+		if mod ~= nil and not seen[mod] then
+			seen[mod] = true
+			result[#result + 1] = mod
+		end
 	end
+	for mod in pairs(loaded_modules) do
+		add(mod)
+	end
+	pcall(function()
+		for _, inst in game:GetDescendants() do
+			if inst:IsA('ModuleScript') then
+				add(inst)
+			end
+		end
+	end)
 	return result
 end
 
 getscriptclosure = function(script_inst)
 	assert(typeof(script_inst) == 'Instance' and script_inst:IsA('LuaSourceContainer'), "invalid argument #1 to 'getscriptclosure' (LuaSourceContainer expected, got " .. typeof(script_inst) .. ')', 2)
 	local bytecode = getscriptbytecode(script_inst)
-	if not bytecode or #bytecode == 0 then
-		return nil
+	if bytecode and #bytecode > 0 then
+		local ok, fn = pcall(load_bytecode, bytecode, module_env(script_inst))
+		if ok and type(fn) == 'function' then
+			return fn
+		end
 	end
-	return load_bytecode(bytecode, module_env(script_inst))
+	-- fallback: re-execute through require and hand out an isolated copy.
+	-- Callers get a fresh table that is shallow-equal but not identical.
+	local okreq, original = pcall(require, script_inst)
+	if okreq and type(original) == 'table' then
+		return function()
+			local copy = {}
+			for k, v in pairs(original) do
+				copy[k] = v
+			end
+			return copy
+		end
+	end
+	error('getscriptclosure: could not load ' .. tostring(script_inst), 2)
 end
 
 getscriptfunction = getscriptclosure
@@ -2849,7 +2902,10 @@ end
 
 setrawmetatable = function(t, mt)
 	locked_mts[t] = mt
-	return real_setmetatable(t, mt)
+	-- never throw: protected metatables cannot be swapped from Lua,
+	-- but the recorded table stays consistent for getrawmetatable.
+	pcall(real_setmetatable, t, mt)
+	return t
 end
 
 hookmetamethod = function(t, method, hook)
