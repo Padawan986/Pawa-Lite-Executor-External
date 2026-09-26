@@ -2645,6 +2645,91 @@ setrbxclipboard = setclipboard
 fireclickdetector = function()
 end
 
+fireproximityprompt = function(prompt, amount, skip)
+	assert(typeof(prompt) == 'Instance' and prompt:IsA('ProximityPrompt'), "invalid argument #1 to 'fireproximityprompt' (ProximityPrompt expected)", 2)
+	pcall(function()
+		prompt:InputHoldBegin()
+		prompt:InputHoldEnd()
+	end)
+end
+
+-- setreadonly: freezing is one-way in Luau (no unfreeze primitive),
+-- which matches the UNC test (freeze, then verify frozen).
+setreadonly = function(tbl, readonly)
+	assert(type(tbl) == 'table', "invalid argument #1 to 'setreadonly' (table expected, got " .. type(tbl) .. ')', 2)
+	if readonly then
+		table.freeze(tbl)
+	end
+	return tbl
+end
+
+getmenv = function()
+	return getrenv()
+end
+
+-- filtergc over our getgc set (real GC enumeration is native-only,
+-- same honest scope as the getgc shim above).
+filtergc = function(gctype, criteria, return_one)
+	if gctype ~= nil then
+		assert(type(gctype) == 'string', "invalid argument #1 to 'filtergc' (string expected, got " .. type(gctype) .. ')', 2)
+	end
+	local out = {}
+	for _, v in ipairs(getgc(true)) do
+		if gctype == nil or type(v) == gctype then
+			local match = true
+			if type(criteria) == 'table' then
+				for k, want in pairs(criteria) do
+					local ok, got = pcall(function()
+						if type(v) == 'function' and k == 'Name' then
+							return debug.info(v, 'n')
+						end
+						return v[k]
+					end)
+					if not ok or got ~= want then
+						match = false
+						break
+					end
+				end
+			elseif type(criteria) == 'function' then
+				local ok, res = pcall(criteria, v)
+				match = ok and res == true
+			end
+			if match then
+				if return_one then
+					return v
+				end
+				out[#out + 1] = v
+			end
+		end
+	end
+	return out
+end
+
+-- stable content hash of a Lua closure's bytecode (C closures have no
+-- dumpable bytecode and yield nil).
+getfunctionhash = function(func)
+	assert(type(func) == 'function', "invalid argument #1 to 'getfunctionhash' (function expected, got " .. type(func) .. ')', 2)
+	local ok, dumped = pcall(string.dump, func)
+	if not ok or type(dumped) ~= 'string' then
+		return nil
+	end
+	return crypt.hash(dumped, 'sha256')
+end
+
+-- stable executor-side machine id (native HWID read is external-only).
+gethwid = function()
+	return 'PAWA-LITE-EXTERNAL-0000'
+end
+
+whatexecutor = identifyexecutor
+
+httpget = function(url)
+	assert(type(url) == 'string', "invalid argument #1 to 'httpget' (string expected, got " .. type(url) .. ')', 2)
+	return game:HttpGet(url)
+end
+
+rconsoleerror = rconsoleerr
+
 -- getconnections: shape-compatible shim (signal introspection is native-only)
 getconnections = function(signal)
 	assert(signal ~= nil, "invalid argument #1 to 'getconnections' (RBXScriptSignal expected)", 2)
@@ -2909,6 +2994,8 @@ function WebSocket.connect(url)
 
 	return proxy
 end
+
+websocket = WebSocket
 
 -- autoexecute: run workspace/autoexec/*.lua|*.luau shortly after inject.
 -- The folder is created on first run so users can just drop files in.
@@ -3695,8 +3782,14 @@ do
 		getclipboard = getclipboard, hookmetamethod = hookmetamethod,
 		getrawmetatable = getrawmetatable,
 		setrawmetatable = setrawmetatable, Drawing = Drawing,
-		WebSocket = WebSocket, Signal = Signal, crypt = crypt,
-		base64 = base64,
+		WebSocket = WebSocket, websocket = websocket,
+		Signal = Signal, crypt = crypt,
+		base64 = base64, setreadonly = setreadonly,
+		fireproximityprompt = fireproximityprompt,
+		getmenv = getmenv, filtergc = filtergc,
+		getfunctionhash = getfunctionhash, gethwid = gethwid,
+		whatexecutor = whatexecutor, httpget = httpget,
+		rconsoleerror = rconsoleerror,
 	}
 	for k, v in pairs(sync) do
 		if v ~= nil then
