@@ -1,7 +1,7 @@
 {
   "app": "Pawa-Lite(Beta)V2",
-  "app_version": "0.2.9",
+  "app_version": "0.2.10",
   "init_version": "2026-09-26.3",
   "notes": "unc fixes: crypt iv, getloadedmodules, getscriptclosure",
-  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.9/Pawa-Lite.exe"
+  "exe_url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.10/Pawa-Lite.exe"
 }

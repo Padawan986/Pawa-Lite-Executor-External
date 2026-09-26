@@ -1,11 +1,11 @@
 {
-  "version": "0.2.9",
-  "notes": "Bridge hardening (real compile errors, port-owner guard), hookfunction shim.",
-  "pub_date": "2026-09-26T19:00:00Z",
+  "version": "0.2.10",
+  "notes": "Bundled init 2026-09-26.3 (unc fixes). Exe + payload always ship together.",
+  "pub_date": "2026-09-26T19:10:00Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUOUtUdE1LcGdHQVhwOUZhUzAzL1pDNUpMbnFLYUgrTkxYT2dJVUhnek56aldvcExoZTRJWGRIaUVNQW4rOWJSRnBacS9OMXRVR1piL2NNem9qTVZlR09ucDVKd1RPZWdZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg5Mzg4MjMwCWZpbGU6UGF3YS1MaXRlKEJldGEpVjJfMC4yLjBfeDY0LXNldHVwLmV4ZQp2V3VLUmFUcTRKVmtWRDJLZ2RwZk1jU3RGTmtzUmNNbWo0NHp1dHIyeUl6Rzd3Y3o1V2xKdlUwOVJzUkdsMDNqS3JxVWFHN2dYN1VNL012QnBLTFZEZz09Cg==",
-      "url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.9/Pawa-Lite.exe"
+      "url": "https://github.com/Padawan986/Pawa-Lite-Executor-External/releases/download/v0.2.10/Pawa-Lite.exe"
     }
   }
 }
